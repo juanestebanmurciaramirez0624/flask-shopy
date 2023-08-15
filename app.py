@@ -1,19 +1,40 @@
 # dependencias del proyecto
-from flask import Flask 
+from flask import Flask, render_template
+from flask_wtf  import FlaskForm
+from wtforms import StringField, SubmitField
+from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
+from config import Config
 
 # crear el objeto de aplicación
 app = Flask(__name__)
 #configurar app para conectarse a bd
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/flask-shopy-2687350'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.config.from_object(Config)
+
+#Crear objeto bootstrap
+bootstrap = Bootstrap(app)
+
 # crear el objeto sqlalchemy
+
 db = SQLAlchemy(app)
+
 #crear el objeto de migracion y activarlo
+
 migrate = Migrate(app , db)
 
+#create class Form of products register in database:
+class RegistroProductosForm(FlaskForm):
+    nombre = StringField('Nombre del producto')
+    precio = StringField('Precio del producto')
+    boton = SubmitField('Enviar')
+class RegistroClientesForm(FlaskForm):
+    Nombre_Cliente = StringField('Nombre')
+    Email_Cliente= StringField('Email')
+    Contraseña_Cliente= StringField('Contrraseña')
+    Boton_Clientes=SubmitField('Enviar')
 ##Modelos <<entities>>
 #__tablename_ = "" define el nombre de la tabla
 class Cliente(db.Model):
@@ -30,8 +51,8 @@ class Producto(db.Model):
     __tablename__ = "productos"
     id = db.Column(db.Integer , primary_key=True)
     nombre = db.Column(db.String(64))
-    precio = db.Column(db.Numeric(precision = 10, scale = 2), nullable = False)
-    imagen = db.Column(db.String(100))
+    precio = db.Column(db.Numeric(precision = 10, scale = 2))
+    imagen = db.Column(db.String(100), nullable = True)
 
 #default = datetime.utcnow permite definir por defecto la fecha actual del equipo
 class Venta(db.Model):
@@ -48,3 +69,30 @@ class Detalle(db.Model):
     producto_id = db.Column(db.Integer, db.ForeignKey('productos.id'))
     venta_id = db.Column(db.Integer, db.ForeignKey('ventas.id'))
     cantidad = db.Column(db.Integer)
+
+@app.route('/productos/registrar', methods = ['GET','POST'])
+def registrar():
+    form = RegistroProductosForm()
+    p = Producto()
+    if form.validate_on_submit():
+        #Crear objeto productos
+        form.populate_obj(p)
+        db.session.add(p)
+        db.session.commit()
+        return "Producto registrado Mi amor :) ♥"
+    return render_template('registrar.html',
+                           form = form)
+
+@app.route('/cliente/registrar', methods = ['GET','POST'])
+def registrar2():
+    form = RegistroClientesForm()
+    if form.validate_on_submit():
+        #Crear Cliente
+        c = Cliente(username = form.Nombre_Cliente.data,
+                    email = form.Email_Cliente.data,
+                    password = form.Contraseña_Cliente.data)
+        db.session.add(c)
+        db.session.commit()
+        return "Cliente registrado Mi amor :) ♥"
+    return render_template('registrar_cliente.html',
+                           form = form)
