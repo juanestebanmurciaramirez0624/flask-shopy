@@ -12,7 +12,7 @@ def listar():
     # listar los productos utilizando 
     # modelos
     productos = app.models.Producto.query.all()
-    return render_template("index.html",
+    return render_template("listaCliente.html",
                            productos =  productos)
 
 

@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap
 from .mi_blueprint import mi_blueprint
 from app.productos import productos 
+from app.clientes import clientes
 
 # crear el objeto de aplicación
 app = Flask(__name__)
@@ -21,6 +22,9 @@ bootstrap = Bootstrap(app)
 #Registrar el nuevo modulo
 app.register_blueprint(mi_blueprint)
 app.register_blueprint(productos)
+
+#Registrar el nuevo modulo
+app.register_blueprint(clientes)
 
 #Traer los modelos
 from .models import Producto,Cliente,Venta,Detalle
